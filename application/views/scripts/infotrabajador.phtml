@@ -1,0 +1,33 @@
+<table class="general" summary="Datos generales" style="width:85%">
+    <?php
+        echo "<tr>";
+        echo "<th style='width: 10%'>Gerencia</th>"."<td>".$this->trabajador->descripcion_gerencia."</td>";
+        echo "<th style='width: 10%'>Departamento</th>"."<td>".$this->trabajador->descripcion_departamento."</td>";
+        echo "<th style='width: 10%'>Cargo</th>"."<td>".$this->trabajador->descripcion_cargo."</td>";
+        echo "<td style='width: 10%' rowspan='4'>";
+
+        echo "<img src='".$this->baseUrl('public/images/fotos/'.$this->trabajador->cedula.'.jpg')."' alt='{$this->trabajador->cedula}.jpg' width='120' height='135' align='middle'>";
+        //echo $this->img('fotos/'.$this->cedula . '.jpg', array('height' => '120', 'width' => '120', 'align' => 'center'));
+    
+        echo "</td>";
+        echo "</tr>";
+
+        echo "<tr>";
+        echo "<th style='width: 10%'>Ficha</th>"."<td>".$this->trabajador->ficha."</td>";
+        echo "<th style='width: 10%'>Cédula</th>"."<td>".$this->trabajador->cedula."</td>";
+        echo "<th style='width: 10%'>Nombre</th>"."<td>".$this->trabajador->nombre."</td>";
+        echo "</tr>";
+        
+        echo "<tr>";
+        echo "<th style='width: 10%'>Estado</th>"."<td>".$this->trabajador->actividad."</td>";
+        echo "<th style='width: 10%'>Nómina</th>"."<td>".$this->trabajador->nomina."</td>";
+        echo "<th style='width: 10%'>F. Ingreso</th>"."<td>".$this->trabajador->fecha_ingreso."</td>";
+        echo "</tr>";
+        
+        echo "<tr>";
+        echo "<th style='width: 10%' >F. Emis. Ficha</th>"."<td title=\"Fecha de emisión de ficha inicial\">".$this->trabajador->fecha_emision_ini."</td>";
+        echo "<th style='width: 10%' >Emisiones</th>"."<td title=\"Cantidad de fichas emitidas\">".$this->trabajador->emisiones_tarj."</td>";
+        echo "<th style='width: 10%' >Estado Ficha</th>"."<td title=\"Estado de ficha actual\">".$this->trabajador->usr_status."</td>";
+        echo "</tr>";
+    ?>    
+</table>

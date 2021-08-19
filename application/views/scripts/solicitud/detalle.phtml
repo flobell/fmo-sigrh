@@ -1,0 +1,171 @@
+<?php
+$this->headStyle()->captureStart();
+echo <<<'EOT'
+span.adjuntos {
+    display: inline-block;
+    white-space: nowrap;
+    padding: 3px;
+    border: 1px solid blue;
+    background-color: #E1E1EC;
+    color: red;
+    margin: 2px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+
+span.adjuntos > a {
+    text-decoration: none;
+    color: blue;
+}
+
+span.adjuntos > a:hover {
+    text-decoration: underline;
+}
+
+a.adjuntos_nuevo {
+    display: inline-block;
+    border: 1px solid green;
+    background-color: #D4F7B4;
+    padding: 3px;
+    text-decoration: none;
+    color: green;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    margin: 2px;
+}
+
+a.adjuntos_nuevo:hover {
+    text-decoration: underline;
+}
+
+span.clientes {
+    display: inline-block;
+    white-space: nowrap;
+    padding: 3px;
+    border: 1px solid blue;
+    background-color: #E1E1EC;
+    color: blue;
+    margin: 2px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+
+EOT;
+$this->headStyle()->captureEnd();
+$idSolicitud = $this->formatoSolicitud($this->solicitud->id);
+$centroCosto = $this->solicitud->findParentRow('Fmo_DbTable_Rpsdatos_CentroCosto', 'CentroCosto');
+$estado = $this->solicitud->findParentRow('Application_Model_DbTable_Estado', 'Estado');
+$prioridad = $this->solicitud->findParentRow('Application_Model_DbTable_Prioridad', 'Prioridad');
+$ambOrigen = $this->solicitud->findParentRow('Application_Model_DbTable_Ambiente', 'AmbienteOrigen');
+$ambDestino = $this->solicitud->findParentRow('Application_Model_DbTable_Ambiente', 'AmbienteDestino');
+$aplicacion = $this->solicitud->findParentRow('Application_Model_DbTable_Aplicacion', 'Aplicacion');
+$adjuntos = $this->solicitud->findDependentRowset('Application_Model_DbTable_SolicitudAdjunto', 'Solicitud');
+$solicitudClientes = $this->solicitud->findDependentRowset('Application_Model_DbTable_SolicitudCliente', 'Solicitud');
+$isBorrador = $this->solicitud->id_estado == Application_Model_DbTable_Estado::ID_SOLICITUD_BORRADOR;
+?>
+<table class="general general-clear" summary="Detalle de la Solicitud <?php echo $idSolicitud; ?>">
+    <caption><?php
+if ($isBorrador):
+    echo '<a class="button" style="float: left;" href="', $this->url(array('action' => 'editar')), '">', $this->img('ico_editar.png', array('alt' => 'Editar')), ' Editar</a>';
+endif;
+echo 'DETALLE DE LA SOLICITUD <span style="color: blue;">', $idSolicitud, '</span>';
+if ($isBorrador or $this->solicitud->id_estado == Application_Model_DbTable_Estado::ID_ESPERA):
+    echo '<a class="button" style="float: right;" href="', $this->url(array('action' => 'eliminar')), '" onclick="return window.confirm(\'¿Está seguro que desea \\\'anular\\\' la solicitud? No podrá reversar el cambio.\');">', $this->img('ico_cancelar.png', array('alt' => 'Anular')), ' Anular</a>';
+endif;
+?></caption>
+    <tr>
+        <th align="right" width="15%" style="">Prioridad</th>
+        <td width="35%" class="blink"><?php 
+if ($prioridad->id_imagen):
+    echo $this->imgUrl($this->url(array('controller' => 'archivo', 'action' => 'imagen', 'id' => $prioridad->id_imagen)), array('alt' => $prioridad->nombre)), ' ';
+endif;
+echo $this->escape($prioridad->nombre); ?></td>
+        <th align="right" width="15%">Estado</th>
+        <td><?php echo $this->imgUrl($this->url(array('controller' => 'archivo', 'action' => 'imagen', 'id' => $estado->id_imagen)), array('alt' => $estado->nombre)), ' ' , $this->escape($estado->nombre); ?></td>
+    </tr>
+    <tr>
+        <th align="right">Aplicación</th>
+        <td><?php echo $this->escape($aplicacion->nombre . ' (' . Fmo_Util::stringToUpper($this->solicitud->id_aplicacion) . ')'); ?></td>
+        <th align="right">Fecha de Registro</th>
+        <td><?php echo Fmo_Util::stringToZendDate($this->solicitud->fecha_registro); ?></td>
+    </tr>
+    <tr>
+        <th align="right">Ambiente Origen</th>
+        <td><span style="color: <?php echo $ambOrigen->color; ?>; font-weight: bolder;"><?php echo $this->escape($ambOrigen->nombre); ?></span></td>
+        <th align="right">Ambiente Destino</th>
+        <td><span style="color: <?php echo $ambDestino->color; ?>; font-weight: bolder;"><?php echo $this->escape($ambDestino->nombre); ?></span></td>        
+    </tr>
+    <tr>
+        <th align="right">Solicitance</th>
+        <td><?php echo $this->formatoPersona($this->solicitud->id_solicitante); ?></td>
+        <th align="right">Unidad Organizativa</th>
+        <td><?php echo $this->escape($centroCosto->ceco_descri); ?></td>
+    </tr>    
+    <tr>
+        <th align="right">Cliente(s)</th>
+        <td colspan="3"><?php
+if ($solicitudClientes->count()):
+    $cedulas = array();
+    foreach ($solicitudClientes as $solicitudCliente):
+        $cedulas[] = $solicitudCliente->id_cliente;
+    endforeach;
+    $tDatBas = new Fmo_DbTable_Rpsdatos_DatoBasico();
+    foreach ($tDatBas->find($cedulas) as $trabajador):
+        $usuario = $trabajador->datb_nombre . ' ' . $trabajador->datb_apellid . ' F-' . $trabajador->datb_nrotrab;
+        echo '<span class="clientes">',
+             $this->escape($usuario);
+        if ($isBorrador):
+            echo ' <a href="', 
+                 $this->url(array('action' => 'clientequitar', 'cliente' => $trabajador->datb_cedula)), 
+                 '" title="Quitar cliente" onclick="return window.confirm(\'¿Desea quitar al usuario \\\'', 
+                 $this->escape(addslashes($usuario)),
+                 '\\\'?\');">', 
+                 $this->img('ico_cerrar.png', array('alt' => 'Quitar usuario')), 
+                 '</a>';
+        endif;
+        echo '</span>';
+    endforeach;
+endif;
+if ($isBorrador):
+    echo '<a class="adjuntos_nuevo" href="', $this->url(array('action' => 'clientenuevo', 'procesando' => '1')),  '" title="Agregar cliente...">', $this->img('ico_usuario_agregar.png', array('alt' => 'Agregar cliente')), 'Añadir</a>';
+endif;
+?></td>
+    </tr>
+    <tr>
+        <th align="right">Archivo(s) Adjunto(s)</th>
+        <td colspan="3"><?php
+$paramsUrlArchivo = array('controller' => 'archivo', 'action' => 'descargar');
+$paramsUrlEliminar = $isBorrador 
+                   ? array('action' => 'adjuntoquitar', SolicitudController::P_CODIGO => $this->solicitud->id)
+                   : false;
+foreach ($adjuntos as $index => $adjunto):
+    $paramsUrlArchivo['id'] = $adjunto->id_adjunto;
+    if ($paramsUrlEliminar !== false):
+        $paramsUrlEliminar[SolicitudController::P_ADJUNTO] = $adjunto->id_adjunto;
+    endif;
+    echo $this->enlaceByIdArchivo($adjunto->id_adjunto, $paramsUrlArchivo, $paramsUrlEliminar);
+endforeach;
+if ($isBorrador):
+    echo '<a class="adjuntos_nuevo" href="', $this->url(array('action' => 'adjunto')),  '" title="Adjuntar archivo...">', $this->img('ico_adjunto.png', array('alt' => 'Adjuntar')), 'Adjuntar</a>';
+endif;
+?></td>
+    </tr>
+    <tr>
+        <th align="left" colspan="4">Descripción</th>
+    </tr>
+    <tr>
+        <td colspan="4"><pre><?php echo $this->escape($this->solicitud->descripcion); ?></pre></td>
+    </tr>
+</table>
+<p align="center">
+    <a class="button" href="<?php echo $this->baseUrl($this->urlDefault); ?>"><?php echo $this->img('ico_volver.png', array('alt' => 'Volver')); ?> Volver</a>
+<?php
+if ($isBorrador):
+    echo '<a class="button" href="', $this->url(array('action' => 'enviar', SolicitudController::P_CODIGO => $this->solicitud->id)), '" title="Continuar...">Continuar ', $this->img('ico_adelante.png', array('alt' => 'Continuar')), '</a>';
+endif;
+?>
+</p>
+<br/>

@@ -1,0 +1,372 @@
+<style>
+
+th.header{
+    font-size: 65%;
+}
+
+td.ajuste{
+    font-size: 60%;
+    color: black;
+
+}
+
+</style>
+
+
+<div class="container-fluid" align="center" style="height: 100%; width: 100%;">
+
+        <table id="tblAsistencia" class="table general table-striped table-bordered" style="width: 99%;">
+           
+            <thead>
+                <tr>
+                    <th  class="header" rowspan = "1" colspan="19" style="text-align: center;">
+                        <h5><b><u>RESUMEN GENERAL DE ASISTENCIA POR GERENCIA</u></b></h5>
+                        <h6>Desde <b><?php echo $this->fecha_desde ?></b> hasta <b><?php echo $this->fecha_hasta ?></b></h6>
+                    </th>  
+                </tr>     
+
+                <tr>
+                    <th class="header" rowspan = "2" colspan="1" style="text-align: center; width: 25%;">DESCRIPCIÓN DE GERENCIA</th>  
+                    <th class="header" rowspan = "2" colspan="1" style="text-align: center;" title="Dias Laborables">DÍAS</th>
+                    <th class="header" colspan="3" style="text-align: center;">TRABAJADORES<br>AUTORIZADOS</th>
+                    <th class="header" colspan="2" style="text-align: center;">TRABAJADORES<br>CON FICHAS</th>
+                    <th class="header" colspan="2" style="text-align: center;">TRABAJADORES<br>DE VACACIONES</th>
+                    <th class="header" colspan="2" style="text-align: center;">TRABAJADORES<br>CON ASISTENCIA</th>
+                    <th class="header" colspan="2" style="text-align: center;">PROMEDIO DIARIO<br>DE ASISTENCIA</th>
+                    <th class="header" colspan="2" style="text-align: center;">% PORCENTAJE DIARIO<br>DE ASISTENCIA</th>
+                    <th class="header" rowspan ="2" style="text-align: center; ">DETALLE</th>
+                </tr>
+            
+                <tr>
+                    <th class="header" title="Puerto Ordaz">POZ</th>
+                    <th class="header" title="Ciudad Piar">CP</th>
+                    <th class="header" title="Puerto Ordaz + Ciudad Piar">TOTAL</th>
+                    <th class="header" title="Puerto Ordaz">POZ</th>
+                    <th class="header" title="Ciudad Piar">CP</th>
+                    <th class="header" title="Puerto Ordaz">POZ</th>
+                    <th class="header" title="Ciudad Piar">CP</th>
+                    <th class="header" title="Puerto Ordaz">POZ</th>
+                    <th class="header" title="Ciudad Piar">CP</th>
+                    <th class="header" title="Puerto Ordaz">POZ</th>
+                    <th class="header" title="Ciudad Piar">CP</th>
+                    <th class="header" title="Puerto Ordaz">POZ</th>
+                    <th class="header" title="Ciudad Piar">CP</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            </tbody>
+        
+            <tfoot>
+                <tr>
+                    <th></th>
+                    <th>TOTAL</th>
+                    <th><?php echo $this->total->trabajadores_autorizados_poz;?></th>
+                    <th><?php echo $this->total->trabajadores_autorizados_cp;?></th>
+                    <th><?php echo $this->total->trabajadores_autorizados_poz+$this->total->trabajadores_autorizados_cp;?></th>
+                    <th><?php echo $this->total->trabajadores_ficha_poz;?></th>
+                    <th><?php echo $this->total->trabajadores_ficha_cp;?></th>
+                    <th><?php echo $this->total->trabajadores_vacacion_poz;?></th>
+                    <th><?php echo $this->total->trabajadores_vacacion_cp;?></th>
+                    <th><?php echo $this->total->asistencia_poz;?></th>
+                    <th><?php echo $this->total->asistencia_cp;?></th>
+                    <th><?php echo $this->total->promedio_diario_poz;?></th>
+                    <th><?php echo $this->total->promedio_diario_cp;?></th>
+                    <th><?php echo $this->total->porc_asistencia_poz;?></th>
+                    <th><?php echo $this->total->porc_asistencia_cp;?></th>
+                    <th></th>
+
+                    <!-- <th></th>
+                    <th>TOTAL</th>
+                    <th>col2</th>
+                    <th>col3</th>
+                    <th>col4</th>
+                    <th>col5</th>
+                    <th>col6</th>
+                    <th>col7</th>
+                    <th>col8</th>
+                    <th>col9</th>
+                    <th>col10</th>
+                    <th>col11</th>
+                    <th>col12</th>
+                    <th>col13</th>
+                    <th>col14</th>
+                    <th></th> -->
+                
+                </tr>
+            </tfoot>
+        </table>
+
+   
+
+</div>
+
+
+<script type="text/javascript">
+    
+    jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+      "date-uk-pre": function ( a ) {
+          var ukDatea = a.split('/');
+          return (ukDatea[2] + ukDatea[1] + ukDatea[0]) * 1;
+      },
+
+      "date-uk-asc": function ( a, b ) {
+          return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+      },
+
+      "date-uk-desc": function ( a, b ) {
+          return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+      }
+    });
+    
+    $(document).ready(function() {
+        
+        <?php 
+            
+                if (count($this->datosBasicos) > 0) {  
+                    $var = 'var arrData = [';
+
+                    foreach ($this->datosBasicos as $row) {                            
+                        
+                        /*
+                            Si un Gerente tiene dos centro de costo 72 y 73 por ejemplo
+                            en cada iteracion traera los trabajadores de cada centro de costo 
+                            */
+                        
+                        // if( $rowceco->ceco == substr($row->ceco_ceco, 0, 2) || $rowceco->ceco==0 ) {                               
+                        $var .= "{
+                            codigo:'{$row->codigo}',
+                            descripcion_gerencia: '{$row->descripcion_gerencia}',
+                            dias_habiles:'{$row->dias_habiles}',             
+                            trabajadores_activos_poz:'{$row->trabajadores_activos_poz}',
+                            trabajadores_activos_cp:'{$row->trabajadores_activos_cp}',
+                            trabajadores_autorizados_poz:'{$row->trabajadores_autorizados_poz}',
+                            trabajadores_autorizados_cp:'{$row->trabajadores_autorizados_cp}',
+                            trabajadores_ficha_poz: '{$row->trabajadores_ficha_poz}',
+                            trabajadores_ficha_cp: '{$row->trabajadores_ficha_cp}',
+                            trabajadores_vacacion_poz: '{$row->trabajadores_vacacion_poz}',
+                            trabajadores_vacacion_cp: '{$row->trabajadores_vacacion_cp}',
+                            asistencia_poz: '{$row->asistencia_poz}',
+                            asistencia_cp: '{$row->asistencia_cp}',
+                            promedio_diario_poz: '{$row->promedio_diario_poz}',
+                            promedio_diario_cp: '{$row->promedio_diario_cp}',
+                            porc_asistencia_poz: '{$row->porc_asistencia_poz}',
+                            porc_asistencia_cp: '{$row->porc_asistencia_cp}',
+                                
+                        },";
+                }
+                
+               
+                
+                
+                $var .= '];';
+                echo $var;                
+                
+            } else {                
+                echo 'var arrData = [];';                                
+            }
+        ?>
+         
+        $('#tblAsistencia').DataTable({
+            dom: "<'row' B f r><'row' t> ",
+            buttons: {
+                buttons: [
+                    {
+                        className: 'btn btn-primary',
+                        text: '<?php echo $this->img('ico_volver.png'); ?><b> VOLVER</b>',
+                        action: function ( e, dt, node, config ) {
+                            history.back();
+                        }
+                    },
+                    { 
+                        className: 'dt-button',
+                        text: 'GENERAR EXCEL',
+                        extend: 'excelHtml5', 
+                        footer: true , 
+                        //filename: 'td900',
+                        header : true,
+                        title: '<?php echo '(SIGRH) Resumen general de asistencia por gerencia '.$this->fecha_desde.' Hasta '.$this->fecha_hasta;?>',
+                        exportOptions: {
+                            columns: [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+                        },
+                        customize: function(xlsx) {
+                            var sheet = xlsx.xl.worksheets['sheet1.xml'];
+                            $('c[r=C2] t', sheet).text( 'TAUT POZ' );
+                            $('c[r=D2] t', sheet).text( 'TAUT CP' );
+                            $('c[r=E2] t', sheet).text( 'TAUT TOTAL' );
+                            $('c[r=F2] t', sheet).text( 'TFIC POZ' );
+                            $('c[r=G2] t', sheet).text( 'TFIC CP' );
+                            $('c[r=H2] t', sheet).text( 'TVAC POZ' );
+                            $('c[r=I2] t', sheet).text( 'TVAC CP' );
+                            $('c[r=J2] t', sheet).text( 'TASI POZ' );
+                            $('c[r=K2] t', sheet).text( 'TASI CP' );
+                            $('c[r=L2] t', sheet).text( 'PDA POZ' );
+                            $('c[r=M2] t', sheet).text( 'PDA CP' );
+                            $('c[r=N2] t', sheet).text( '%ASI POZ' );
+                            $('c[r=O2] t', sheet).text( '%ASI CP' );
+                        }
+                    }
+                ],
+                dom: {
+                    button: {
+                        tag: "button",
+                        className: null
+                    }
+                }
+            },
+            language: { emptyTable: 'La consulta no devolvió registros.' },
+            scrollX: true,
+            scrollY: "400px",
+            paging: false,
+            //responsive: true,
+            fixedColumns: {
+                leftColumns: 1
+            },
+            // footerCallback: function () {
+            //     var api = this.api();
+            //     var intVal = function ( i ) {
+            //            return typeof i === 'string' ?
+            //               i.replace(/[\$,]/g, '')*1 :
+            //               typeof i === 'number' ? i : 0;
+            //     };
+            //     columns = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14];
+
+            //     totales = [];
+
+            //     for (var i = 2; i < columns.length; i++) {               
+            //         total = api
+            //         .column( i )
+            //         .data()
+            //         .reduce( function (a, b) {
+            //             return intVal(a) + intVal(b);
+            //         }, 0 );
+            //         totales[i] = total;
+            //         console.log("columna "+i,total);
+            //         //columns
+
+
+            //         if (total<0 && total_pagina<0){
+            //             $('tfoot th').eq(i).html('<span style="color:white; font-weight: bold; font-size: 15px !important;">'+ (total).toFixed(0) +'</span>');
+            //         }
+            //         else {
+            //             $('tfoot th').eq(i).html('<span style="color:white; font-weight: bold; font-size: 15px !important;">'+ (total).toFixed(0) +'</span>');
+            //         }
+            //     }
+
+
+            //     $('tfoot th').eq(13).html('<span style="color:white; font-weight: bold; font-size: 15px !important;">'+ <?php echo $this->total->porc_asistencia_poz;?> +'</span>');
+            //     $('tfoot th').eq(14).html('<span style="color:white; font-weight: bold; font-size: 15px !important;">'+ <?php echo $this->total->porc_asistencia_cp;?> +'</span>');
+
+            // },
+            data: arrData,
+            
+            columns: [
+                {
+                    data: 'descripcion_gerencia',
+                    className: 'text-left ajuste',
+                    //orderable: false
+                },
+                {   
+                    data: 'dias_habiles',
+                    className: 'text-center',
+                    orderable: false,
+                },
+                {
+                    data: 'trabajadores_autorizados_poz',
+                    className: 'text-center',
+                    //orderable: false,
+                },
+                
+                {
+                    data: 'trabajadores_autorizados_cp',
+                    className: 'text-center',
+                    //orderable: false,
+                },
+                {
+                    data: null,
+                    className: 'text-center',
+                    //orderable: false,
+                    render: function (data, type, row, meta) {
+                        //console.log('data cp', parseInt(row.trabajadores_autorizados_cp));
+                        return  (parseInt(row.trabajadores_autorizados_poz)||0)+(parseInt(row.trabajadores_autorizados_cp)||0);
+                    }
+                },
+                {
+                    data: 'trabajadores_ficha_poz',
+                    className: 'text-center',
+                    //orderable: false,
+                },
+                {
+                    data: 'trabajadores_ficha_cp',
+                    className: 'text-center',
+                    //orderable: false,
+                },
+                {
+                    data: 'trabajadores_vacacion_poz',
+                    className: 'text-center',
+                    //orderable: false,
+                },
+                {
+                    data: 'trabajadores_vacacion_cp',
+                    className: 'text-center',
+                    //orderable: false,
+                },
+                {
+                    data: 'asistencia_poz',
+                    className: 'text-center',
+                    //orderable: false,
+                },
+                {
+                    data: 'asistencia_cp',
+                    className: 'text-center',
+                    //orderable: false,
+                },
+                {
+                    data: 'promedio_diario_poz',
+                    className: 'text-center',
+                    //orderable: false,
+                },
+                {
+                    data: 'promedio_diario_cp',
+                    className: 'text-center',
+                    //orderable: false,
+                },
+                {
+                    data: 'porc_asistencia_poz',
+                    className: 'text-center',
+                    //orderable: false,
+                    // render: function (data, type, row, meta) {
+                    //     let porcentaje = (row.asistencia_poz/row.trabajadores_autorizados_poz)*100;
+                    //     return  (porcentaje>0?porcentaje.toFixed(2):(0))+"%";
+                    // }
+                },
+                {
+                    data: 'porc_asistencia_cp',
+                    className: 'text-center',
+                    //orderable: false,
+                    // render: function (data, type, row, meta) {
+                    //     let porcentaje = (row.asistencia_cp/row.trabajadores_autorizados_cp)*100;
+                    //     return  (porcentaje>0?porcentaje.toFixed(2):(0))+"%";
+                    // }
+                },
+                {
+                    className: 'text-center',
+                    orderable: false,
+                    render: function (data, type, row, meta) {           
+                        return  '<a href="<?php echo $this->baseUrl('') ?>default/fichaje/vwdetallegerencial/gerencia/'+row.codigo+'/desde/<?php echo $this->fecha_desde; ?>/hasta/<?php echo $this->fecha_hasta; ?>" title="Ver detalle"><?php echo $this->img('ico_detalle.png'); ?></a>';
+                    }
+                }
+                
+              
+            ],
+            order: [
+                [ 0, "asc" ]
+            ],
+            
+            
+        });
+       
+    });
+
+
+</script>

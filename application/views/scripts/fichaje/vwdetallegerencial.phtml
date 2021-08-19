@@ -1,0 +1,213 @@
+
+
+<div class="container-fluid" align="center">
+
+    <div class="row" style="width: 70%;">
+        <h2 align="center"><u>Resumen Detallado de Asistencia</u></h2>
+        <h3 align="center"><?php echo $this->gerencia; ?></h3>
+        <h4 align="center">Desde <b><?php echo $this->fecha_desde ?></b> hasta <b><?php echo $this->fecha_hasta ?></b></h4>
+        <table id="tblDetalleGerencial" class="table general table-striped table-bordered table-condensed table-hover">
+            <thead>
+                <tr>
+                    <th style="text-align: center;" rowspan="2" >DÍA</th>
+                    <th style="text-align: center;" rowspan="2" >FECHA</th>
+                    <th style="text-align: center;" colspan="2" >TRABAJADORES ACTIVOS</th>
+                    <th style="text-align: center;" colspan="2" >TRABAJADORES AUTORIZADOS</th>
+                    <th style="text-align: center;" colspan="2" >TRABAJADORES ASISTENTES</th>
+                </tr>
+
+                <tr>
+                    <th style="text-align: center;" title="Puerto Ordaz">POZ</th>
+                    <th style="text-align: center;" title="Ciudad Piar">CP</th>
+                    <th style="text-align: center;" title="Puerto Ordaz">POZ</th>
+                    <th style="text-align: center;" title="Ciudad Piar">CP</th>
+                    <th style="text-align: center;" title="Puerto Ordaz">POZ</th>
+                    <th style="text-align: center;" title="Ciudad Piar">CP</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th style="text-align: center;"></th>
+                    <th style="text-align: center;">TOTALES</th>
+                    <th style="text-align: center;">col2</th>
+                    <th style="text-align: center;">col3</th>
+                    <th style="text-align: center;">col4</th>
+                    <th style="text-align: center;">col5</th>
+                    <th style="text-align: center;">col6</th>
+                    <th style="text-align: center;">col7</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    
+    jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+      "date-uk-pre": function ( a ) {
+          var ukDatea = a.split('/');
+          return (ukDatea[2] + ukDatea[1] + ukDatea[0]) * 1;
+      },
+
+      "date-uk-asc": function ( a, b ) {
+          return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+      },
+
+      "date-uk-desc": function ( a, b ) {
+          return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+      }
+    });
+    
+    $(document).ready(function() {
+
+        <?php 
+            if (count($this->detalleGerencial) > 0) {
+                $var = 'var arrData = [';
+
+                foreach ($this->detalleGerencial as $row) {
+                    $var .= "{
+                        dia: '{$row->dia}',
+                        fecha: '{$row->fecha}',
+                        trab_activos_poz: '{$row->trab_activos_poz}',
+                        trab_activos_cp: '{$row->trab_activos_cp}',
+                        trab_autorizados_poz: '{$row->trab_autorizados_poz}',
+                        trab_autorizados_cp: '{$row->trab_autorizados_cp}',
+                        trab_asistencia_poz: '{$row->trab_asistencia_poz}',
+                        trab_asistencia_cp: '{$row->trab_asistencia_cp}'
+                    },";
+                }          
+
+                $var .= '];';
+
+                echo $var;
+            } else {
+                echo 'var arrData = [];';
+            }
+        ?>
+
+        $('#tblDetalleGerencial').DataTable({
+            dom: "<'row' B l f r><'row' t><'row' i p>",
+            buttons: {
+                buttons: [
+                    {
+                        className: 'btn btn-primary',
+                        text: '<?php echo $this->img('ico_volver.png'); ?><b> VOLVER</b>',
+                        action: function ( e, dt, node, config ) {
+                            history.back();
+                        }
+                    },
+                    { 
+                        className: 'dt-button',
+                        text: 'GENERAR EXCEL',
+                        extend: 'excelHtml5', 
+                        footer: true , 
+                        title: '<?php echo 'Resumen detallado '.$this->gerencia.' desde '.$this->fecha_desde.' hasta '.$this->fecha_hasta;?>',
+                        exportOptions: {
+                            columns: [ 0, 1, 2, 3, 4, 5, 6, 7 ]
+                        },
+                        customize: function(xlsx) {
+                            var sheet = xlsx.xl.worksheets['sheet1.xml'];
+                            $('c[r=C2] t', sheet).text( 'TACT POZ' );
+                            $('c[r=D2] t', sheet).text( 'TACT CP' );
+                            $('c[r=E2] t', sheet).text( 'TAUT POZ' );
+                            $('c[r=F2] t', sheet).text( 'TAUT CP' );
+                            $('c[r=G2] t', sheet).text( 'TASI POZ' );
+                            $('c[r=H2] t', sheet).text( 'TASI CP' );
+                        }
+                    }
+                ],   
+                dom: {
+                    button: {
+                        tag: "button",
+                        className: null
+                    }
+                }
+            },
+            language: { emptyTable: 'La consulta no devolvió registros.' },
+            //scrollY: "400px",
+            paging:   true,
+            footerCallback: function () {
+                var api = this.api();
+                var intVal = function ( i ) {
+                    return typeof i === 'string' ?
+                        i.replace(/[\$,]/g, '')*1 :
+                        typeof i === 'number' ? i : 0;
+                };
+                columns = [0,1,2,3,4,5,6,7];
+
+                for (var i = 2; i < columns.length; i++) {               
+                    total = api
+                        .column( i )
+                        .data()
+                        .reduce( function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0 );
+
+                    console.log("columna "+i,total);
+
+                    //columns
+                    if (total < 0 && total_pagina < 0){
+                        $('tfoot th').eq(i).html('<span style="color:white; font-weight: bold; font-size: 15px !important;">'+ (total).toFixed(0) +'</span>');
+                    }
+                    else {
+                        $('tfoot th').eq(i).html('<span style="color:white; font-weight: bold; font-size: 15px !important;">'+ (total).toFixed(0) +'</span>');
+                    }
+                }
+
+            },
+            pageLength: 10,
+            data: arrData,
+            columns: [
+                {   
+                    data: 'dia',
+                    className: 'text-center',
+                    // orderable: false
+                },
+                {   
+                    data: 'fecha',
+                    className: 'text-center',
+                    // orderable: false
+                },
+                {
+                    data: 'trab_activos_poz',
+                    className: 'text-center',
+                    // orderable: false
+                },
+                {
+                    data: 'trab_activos_cp',
+                    className: 'text-center',
+                    // orderable: false
+                },
+                {
+                    data: 'trab_autorizados_poz',
+                    className: 'text-center',
+                    // orderable: false
+                },
+                {
+                    data: 'trab_autorizados_cp',
+                    className: 'text-center',
+                    // orderable: false
+                },
+                {
+                    data: 'trab_asistencia_poz',
+                    className: 'text-center',
+                    // orderable: false,
+                },
+                {
+                    data: 'trab_asistencia_cp',
+                    className: 'text-center',
+                    // orderable: false
+                }
+            ],
+            order: [
+                [ 1, "asc" ]
+            ]
+        });
+
+    });
+
+
+</script>

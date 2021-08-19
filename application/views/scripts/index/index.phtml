@@ -1,0 +1,16 @@
+<?php
+$sistema = Zend_Registry::get('sistema');
+$usuario = Fmo_Model_Seguridad::getUsuarioSesion();
+?>
+
+<h4 style="text-align: left;">
+    Ultima Actualización: <b style="color: red;"><?php echo Application_Model_Fichaje::getMaxFechaCargada()->fecha_hora_cargada; ?></b>
+</h4>
+
+<h1 style="text-transform: uppercase; text-align: center;">
+    <?php echo $this->escape($sistema['titulo']), ' (', $this->escape($sistema['siglado']), ')'; ?>
+</h1>
+
+<div style="display: flex; align-items: center; justify-content: center;">
+    <?php echo $this->img('portada.png', array('alt' => 'Logo SIGRH')); ?>
+</div>

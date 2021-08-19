@@ -1,0 +1,68 @@
+<?php echo $this->formulario->renderForm(false); ?>
+
+<div class="container-fluid" align="center">
+
+    <h3 align="center"><u>Configuración de control de acceso</u></h3>
+    <h5 align="center" style="color: red;">*Las modificaciones afectarán globalmente al sistema</u></h5>
+    
+    <!-- <br><a class="btn btn-primary" href="#"><?php //echo $this->img('ico_volver.png'); ?>&nbspVolver</a> -->
+    <br>
+
+    <div class="row" style="width: 45%;">  
+        <table class="table general table-striped table-bordered nowrap compact">
+            <caption style="color: black; text-align: left;">Configuración de Asistencia</caption>
+            <tbody>
+                <tr>
+                    <?php  echo $this->formulario->getElement(Application_Form_ConfiguracionFichaje::E_CONF_1)->renderLabel();?>
+                    <td style="text-align: center; width: 25%;"><?php echo $this->formulario->getElement(Application_Form_ConfiguracionFichaje::E_CONF_1)->renderViewHelper(); ?></td>
+                </tr>
+                <tr>
+                    <?php echo $this->formulario->getElement(Application_Form_ConfiguracionFichaje::E_CONF_1_2)->renderLabel();?>
+                    <td style="text-align: center; width: 25%;"><?php echo $this->formulario->getElement(Application_Form_ConfiguracionFichaje::E_CONF_1_2)->renderViewHelper(); ?></td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="text-align: left;"><?php  echo $this->formulario->getElement(Application_Form_ConfiguracionFichaje::E_CONF_1)->renderDescription();?></div>
+    </div>
+    
+    <br>
+
+    <div class="row" style="width: 60%;">  
+        <table class="table general table-striped table-bordered table-condensed">
+            <caption style="color: black; text-align: left;">Motivos de Control de Acceso</caption>
+            <thead>
+                <tr> 
+                    <th style="text-align: center;" title="Codigo de control de acceso">Codigo</th>
+                    <th style="text-align: center;" title="Descripción del motivo">Descripción</th>
+                    <th style="text-align: center;" title="Indicador de Asistencia">Indicador</th>
+                    <th style="text-align: center;" title="Tiempo mínimo de asistencia">Tiempo mínimo</th>
+                    <th style="text-align: center;" title="Tipo de tiempo mínimo">Tipo de tiempo</th>
+                    <th style="text-align: center;" title="Fecha de ultima modificación">Modificado el</th>
+                    <th style="text-align: center;" title="Usuario de ultima modificación">Modificado por</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach($this->motivos as $row): ?>
+
+                <tr>
+                    <td class="text-nowrap" style="text-align: center"><?php echo $row->codigo_biostar; ?></td>
+                    <td class="text-nowrap" style="text-align: left"><?php echo $row->descripcion_biostar; ?></td>
+                    <td class="text-nowrap" style="text-align: center"><?php echo $row->indicador_asistencia; ?></td>
+                    <td class="text-nowrap" style="text-align: center"><?php echo $row->hrs_asistencia; ?></td>
+                    <td class="text-nowrap" style="text-align: center"><?php echo $row->tipo_tiempo; ?></td>
+                    <td class="text-nowrap" style="text-align: center"><?php echo $row->fecha_mod; ?></td>
+                    <td class="text-nowrap" style="text-align: center"><?php echo $row->usr_mod; ?></td>
+                </tr>
+                    
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+
+    <br>
+
+    <div>
+        <td style="text-align: center;"><?php echo $this->formulario->getElement(Application_Form_ConfiguracionFichaje::E_GUARDAR)->renderViewHelper(); ?></td>
+    </div>
+
+</div>

@@ -1,0 +1,203 @@
+<div class="container-fluid" align="center">
+
+    <h3 align="center">Listado Detallado de Asistencia [ <b><?php echo $this->fecha_desde ?></b> ~ <b><?php echo $this->fecha_hasta ?></b> ]</h3>
+    <h4 align="center"><?php echo $this->gerencia ?></h4>
+    
+    <div class="row" style="width: 99%;">  
+        <table id="tblDetalle" class="table general table-hover table-striped table-bordered nowrap compact">
+            <thead>
+                <tr> 
+                    <th style="text-align: center;">Gerencia</th>
+                    <th style="text-align: center;">Departamento</th>
+                    <th style="text-align: center;">Ficha</th>
+                    <th style="text-align: center;">Cedula</th>
+                    <th style="text-align: center;">Nombre</th>
+                    <th style="text-align: center;">Nomina</th>
+                    <th style="text-align: center;">Actividad</th>
+                    <th style="text-align: center;">Día</th>
+                    <th style="text-align: center;">Fecha</th>
+                    <th style="text-align: center;">Hora</th>
+                    <th style="text-align: center;">Descripcion</th>
+                    <th style="text-align: center;">Evento</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+
+</div>
+
+
+<script type="text/javascript">
+    
+    jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+      "date-uk-pre": function ( a ) {
+          var ukDatea = a.split('-');
+          return (ukDatea[2] + ukDatea[1] + ukDatea[0]) * 1;
+      },
+
+      "date-uk-asc": function ( a, b ) {
+          return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+      },
+
+      "date-uk-desc": function ( a, b ) {
+          return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+      }
+    });
+    
+    $(document).ready(function() {
+        <?php 
+            if (count($this->datosListado) > 0) {
+                $var = 'var arrData = [';
+
+                foreach ($this->datosListado as $row) {
+                    $var .= "{
+                        gerencia: '{$row->gerencia}',
+                        departamento: '{$row->departamento}',
+                        ficha: '{$row->ficha}',
+                        cedula: '{$row->cedula}',
+                        nombre: '{$row->nombre}',
+                        nomina: '{$row->nomina}',
+                        actividad: '{$row->actividad}',
+                        fecha_completa: '{$row->fecha_completa}',
+                        dia: '{$row->dia}',
+                        fecha: '{$row->fecha}',
+                        hora: '{$row->hora}',
+                        descripcion: '{$row->descripcion}',
+                        evento: '{$row->evento}',
+                    },";
+                }          
+
+                $var .= '];';
+
+                echo $var;
+            } else {
+                echo 'var arrData = [];';
+            }
+        ?>
+                
+
+        $('#tblDetalle').DataTable({
+            dom: "<'row' B l f r><'row' t><'row' i p>",
+            buttons: {
+                buttons: [
+                    {
+                        className: 'btn btn-primary',
+                        text: '<?php echo $this->img('ico_volver.png'); ?><b> VOLVER</b>',
+                        action: function ( e, dt, node, config ) {
+                            history.back();
+                        }
+                    },
+                    { 
+                        className: 'dt-button',
+                        text: 'GENERAR EXCEL',
+                        extend: 'excelHtml5', 
+                        footer: true , 
+                        title: '<?php echo '(SIGRH) Listado de Asistencia Detallado desde '.$this->fecha_desde.' hasta '.$this->fecha_hasta;?>',
+                        exportOptions: { 
+                            columns: [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] 
+                        }
+                    }
+                ],   
+                dom: {
+                    button: {
+                        tag: "button",
+                        className: null
+                    }
+                }
+            },
+            language: {
+                emptyTable: 'La consulta no devolvió registros.'
+            },         
+            paging:   true,
+            lengthMenu: [
+                [15,20,25,50,100],
+                ['15','20','25','50','100']
+            ],
+            pageLength: 15,
+            scrollX: true, 
+            scrollY: "50vh",
+            data: arrData,   
+            // ajax: {
+            //     url: '<?php //echo $this->url(array('controller' => 'ajax', 'action' => 'asistenciadetallada', 'desde' => $this->fecha_desde, 'hasta' => $this->fecha_hasta, 'gerencia' => $this->nroGerencia)); ?>',
+            //     dataSrc: '',
+            // },
+            columns: [   
+                {
+                    data: 'gerencia',
+                    className: 'text-left',
+                    orderable: true,
+                }, 
+                {
+                    data: 'departamento',
+                    className: 'text-left',
+                    orderable: true,
+                },    
+                {
+                    data: 'ficha',
+                    className: 'text-center',
+                    orderable: true,
+                },
+                {
+                    data: 'cedula',
+                    className: 'text-center',
+                    orderable: true,
+                },     
+                {
+                    data: 'nombre',
+                    className: 'text-left',
+                    orderable: true,
+                },    
+                {
+                    data: 'nomina',
+                    className: 'text-center',
+                    orderable: true,
+                },  
+                {
+                    data: 'actividad',
+                    className: 'text-center',
+                    orderable: true,
+                },  
+                {
+                    data: 'dia',
+                    className: 'text-center',
+                    orderable: false,
+                },   
+                {
+                    data: 'fecha',
+                    className: 'text-center',
+                    type: 'date-uk',
+                    orderable: true,
+                },   
+                {
+                    data: 'fecha_completa',
+                    className: 'text-center',
+                    //type: 'date-euro', 
+                    render: function (data, type, row) {
+                        return moment(data).format('hh:mm:ss A');
+                    },
+                },
+                {
+                    data: 'descripcion',
+                    className: 'text-left',
+                    orderable: true,
+                },   
+                {
+                    data: 'evento',
+                    className: 'text-left',
+                    orderable: true,
+                },   
+
+            ],
+            order: [
+                [ 0, "asc" ],
+                [ 1, "asc" ],
+                [ 2, "asc" ],
+                [ 8, "asc" ]
+            ]
+        });
+
+    });
+</script>

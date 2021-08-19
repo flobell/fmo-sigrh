@@ -1,0 +1,70 @@
+<table class="general" summary="Listado de Solicitudes">
+    <caption>LISTADO DE SOLICITUDES <a class="button" style="float: right;" href="<?php echo $this->url(array('controller' => 'solicitud', 'action' => 'nuevo')); ?>">Nuevo</a></caption>
+    <thead>
+        <tr>
+            <th width="18"><abbr title="Prioridad">P</abbr></th>
+            <th width="18"><abbr title="Estado">E</abbr></th>
+            <th width="18"><abbr title="Adjunto">A</abbr></th>
+            <th width="60">Código</th>
+            <th width="7%">Aplicación</th>
+            <th>Descripción</th>
+            <th width="12%">Ambiente</th>
+            <th width="23%">Solicitante</th>
+            <th width="10%">Fecha de Registro</th>            
+        </tr>
+    </thead>
+    <tbody>
+<?php
+if ($this->paginator->count()):
+    $personas = array();
+    static $maxLen = 256;
+    /* @var $row Zend_Db_Table_Row */
+    foreach ($this->paginator as $row):
+        $prioridad = $row->findParentRow('Application_Model_DbTable_Prioridad', 'Prioridad');
+        $estado = $row->findParentRow('Application_Model_DbTable_Estado', 'Estado');
+        $ambOrigen = $row->findParentRow('Application_Model_DbTable_Ambiente', 'AmbienteOrigen');
+        $ambDestino = $row->findParentRow('Application_Model_DbTable_Ambiente', 'AmbienteDestino');
+        $adjuntos = $row->findDependentRowset('Application_Model_DbTable_SolicitudAdjunto', 'Solicitud'); 
+        $aplicacion = $row->findParentRow('Application_Model_DbTable_Aplicacion', 'Aplicacion');
+?>
+        <tr>
+            <td align="center"><?php 
+        if ($prioridad->id_imagen):
+            echo $this->imgUrl($this->url(array('controller' => 'archivo', 'action' => 'imagen', 'id' => $prioridad->id_imagen)), array('alt' => $prioridad->nombre, 'title' => $prioridad->nombre));
+        endif; ?></td>
+            <td align="center"><?php echo $this->imgUrl($this->url(array('controller' => 'archivo', 'action' => 'imagen', 'id' => $estado->id_imagen)), array('alt' => $estado->nombre, 'title' => $estado->nombre)); ?></td>
+            <td align="center"><?php 
+        if ($adjuntos->count() >= 1):
+            echo $this->img('ico_adjunto.png', array('title' => 'Adjunto', 'alt' => 'Adjunto'));
+        endif; ?></td>
+            <td align="center">
+                <a href="<?php echo $this->url(array('action' => 'detalle', SolicitudController::P_CODIGO => $row->id)); ?>" title="Ver detalle o modificar..."><?php echo $this->formatoSolicitud($row->id, ''); ?></a>
+            </td>
+            <td align="center">
+                <abbr title="<?php echo $this->escape($aplicacion->nombre); ?>"><?php echo $this->stringToUpper($row->id_aplicacion); ?></abbr>
+            </td>
+            <td><?php 
+        if (mb_strlen($row->descripcion, $this->getEncoding()) >= $maxLen):
+            echo $this->escape(Fmo_Util::left($row->descripcion, $maxLen)), '...';
+        else:
+            echo $this->escape($row->descripcion);
+        endif; ?></td>
+            <td align="center"><?php echo $this->escape($ambOrigen->nombre . ' → ' . $ambDestino->nombre); ?></td>
+            <td><?php echo $this->formatoPersona($row->id_solicitante); ?></td>            
+            <td align="center"><?php echo Fmo_Util::stringToZendDate($row->fecha_registro); ?></td>
+        </tr>
+<?php
+    endforeach;
+else: ?>
+        <tr>
+            <td align="center" colspan="10">Disculpe la consulta no devolvió registros.</td>
+        </tr>
+<?php
+endif;
+?>
+    </tbody>
+</table>
+<?php
+echo $this->paginationControl();
+?>
+<br/>

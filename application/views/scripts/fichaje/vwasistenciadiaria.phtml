@@ -1,0 +1,263 @@
+<div class="container-fluid" align="center">
+
+    <h3 align="center">Listado Diario de Asistencia [ <b><?php echo $this->fecha_desde ?></b> ~ <b><?php echo $this->fecha_hasta ?></b> ]</h3>
+    <h4 align="center"><?php echo $this->gerencia ?></h4>
+
+    <div class="row" style="width: 99%;">  
+        <table id="tblTiempos" class="table general table-hover table-striped table-bordered nowrap compact">
+            <thead>
+                <tr> 
+                    <th style="text-align: center;">Gerencia</th>
+                    <th style="text-align: center;">Departamento</th>
+                    <th style="text-align: center;">Ficha</th>
+                    <th style="text-align: center;">Cédula</th>
+                    <th style="text-align: center;">Nombre</th>
+                    <th style="text-align: center;">Dia</th>
+                    <th style="text-align: center;">Fecha</th>  
+                    <th style="text-align: center;">Llegada Control</th>
+                    <th style="text-align: center;">Salida Control</th>
+                    <th style="text-align: center;">Horas Control</th>
+                    <th style="text-align: center;">Descripción Control</th>
+                    <th style="text-align: center;">Turno</th>
+                    <th style="text-align: center;">Llegada Nomina</th>
+                    <th style="text-align: center;">Salida Nomina</th>
+                    <th style="text-align: center;" title="Descanso Legal">DL</th>
+                    <th style="text-align: center;">Horas Nomina</th>
+                    <th style="text-align: center;">Descripción Nomina</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+
+</div>
+
+
+<script type="text/javascript">
+    
+    jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+      "date-uk-pre": function ( a ) {
+          var ukDatea = a.split('-');
+          return (ukDatea[2] + ukDatea[1] + ukDatea[0]) * 1;
+      },
+
+      "date-uk-asc": function ( a, b ) {
+          return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+      },
+
+      "date-uk-desc": function ( a, b ) {
+          return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+      }
+    });
+    
+    $(document).ready(function() {
+        <?php 
+            if (count($this->datosListado) > 0) {
+                $var = 'var arrData = [';
+
+                foreach ($this->datosListado as $row) {
+                    $var .= "{
+                        gerencia: '{$row->gerencia}',
+                        departamento: '{$row->departamento}',
+                        ficha: '{$row->ficha}',
+                        cedula: '{$row->cedula}',
+                        nombre: '{$row->nombre}',
+                        dia: '{$row->dia}',
+                        fecha_dia: '{$row->fecha_dia}',
+                        turno: '{$row->turno}',
+                        entrada_nomina: '{$row->entrada_nomina}',
+                        salida_nomina: '{$row->salida_nomina}',
+                        descanso_legal: '{$row->descanso_legal}',
+                        descripcion_nomina: '{$row->descripcion_nomina}',
+                        horas_nomina: '{$row->horas_nomina}',
+                        entrada_biostar: '{$row->entrada_biostar}',
+                        salida_biostar: '{$row->salida_biostar}',
+                        descripcion_biostar: '{$row->descripcion_biostar}',
+                        horas_biostar: '{$row->horas_biostar}',
+                    },";
+                }          
+
+                $var .= '];';
+
+                echo $var;
+            } else {
+                echo 'var arrData = [];';
+            }
+        ?>
+                
+
+        $('#tblTiempos').DataTable({
+            dom: "<'row' B l f r><'row' t><'row' i p>",
+            buttons: {
+                buttons: [
+                    {
+                        className: 'btn btn-primary',
+                        text: '<?php echo $this->img('ico_volver.png'); ?><b> VOLVER</b>',
+                        action: function ( e, dt, node, config ) {
+                            history.back();
+                        }
+                    },
+                    { 
+                        className: 'dt-button',
+                        text: 'GENERAR EXCEL',
+                        extend: 'excelHtml5', 
+                        footer: true , 
+                        title: '<?php echo '(SIGRH) Listado de Asistencia Diario desde '.$this->fecha_desde.' hasta '.$this->fecha_hasta;?>',
+                        exportOptions: { 
+                            columns: [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ,11, 12 ,13 ,14 ,15, 16] 
+                        }
+                    }
+                ],   
+                dom: {
+                    button: {
+                        tag: "button",
+                        className: null
+                    }
+                }
+            },
+            language: {
+                emptyTable: 'La consulta no devolvió registros.'
+            },         
+            paging:   true,
+            lengthMenu: [
+                [15,20,25,50,100],
+                ['15','20','25','50','100']
+            ],
+            pageLength: 15,
+            data: arrData,
+            scrollX: true,
+            scrollY: "50vh",
+            columns: [   
+                {
+                    data: 'gerencia',
+                    className: 'text-left',
+                    orderable: true,
+                }, 
+                {
+                    data: 'departamento',
+                    className: 'text-left',
+                    orderable: true,
+                }, 
+                {
+                    data: 'ficha',
+                    className: 'text-center',
+                    orderable: true,
+                }, 
+                {
+                    data: 'cedula',
+                    className: 'text-center',
+                    orderable: true,
+                }, 
+                {
+                    data: 'nombre',
+                    className: 'text-left',
+                    orderable: true,
+                },   
+                {
+                    data: 'dia',
+                    className: 'text-center',
+                    render: function (data, type, row, meta) {
+                        let dia = data;
+                        if(data.toString().trim() == 'monday'){dia = 'LUN';} 
+                        if(data.toString().trim() == 'tuesday'){dia = 'MAR';} 
+                        if(data.toString().trim() == 'wednesday'){dia = 'MIE';} 
+                        if(data.toString().trim() == 'thursday'){dia = 'JUE';} 
+                        if(data.toString().trim() == 'friday'){dia = 'VIE';}
+                        if(data.toString().trim() == 'saturday'){dia = 'SAB';} 
+                        if(data.toString().trim() == 'sunday'){dia = 'DOM';}
+                        return dia;
+                    }
+                },             
+                {
+                    data: 'fecha_dia',
+                    className: 'text-center',
+                    type: 'date-uk',
+                    orderable: true,
+                },   
+                {
+                    data: 'entrada_biostar',
+                    className: 'text-center',
+                    type: 'date-euro',
+                    orderable: false,
+                    render: function (data, type, row, meta) { 
+                        if(data) return moment(data).format('hh:mm A')+' '+moment(data).format('DD-MM-YYYY');
+                        return '';
+                    }
+                },   
+                {
+                    data: 'salida_biostar',
+                    className: 'text-center',
+                    type: 'date-euro',
+                    orderable: false,
+                    render: function (data, type, row, meta) {           
+                        if(data) return moment(data).format('hh:mm A')+' '+moment(data).format('DD-MM-YYYY');
+                        return '';
+                    }
+                },
+                {
+                    data: 'horas_biostar',
+                    className: 'text-center',
+                    orderable: false,
+                    render: function (data, type, row, meta) {           
+                        if(data) return '<a href="<?php echo $this->baseUrl('default/fichaje/vwdetalleasistencia') ?>/cedula/'+row.cedula+'/desde/'+moment(row.entrada_biostar).format('DD-MM-YYYY')+'/hasta/'+moment(row.salida_biostar).format('DD-MM-YYYY')+'" title="Ver detalle">'+data+'</a>';
+                        return '';
+                    }
+                }, 
+                {
+                    data: 'descripcion_biostar',
+                    className: 'text-left',
+                    orderable: false,
+                }, 
+                {
+                    data: 'turno',
+                    className: 'text-center',
+                    orderable: true,
+                }, 
+                {
+                    data: 'entrada_nomina',
+                    className: 'text-center',
+                    type: 'date-euro',
+                    orderable: false,
+                    render: function (data, type, row, meta) {           
+                        if(data) return moment(data).format('hh:mm A')+' '+moment(data).format('DD-MM-YYYY');
+                        return '';
+                    }
+                },   
+                {
+                    data: 'salida_nomina',
+                    className: 'text-center',
+                    type: 'date-euro',
+                    orderable: false,
+                    render: function (data, type, row, meta) {           
+                        if(data) return moment(data).format('hh:mm A')+' '+moment(data).format('DD-MM-YYYY');
+                        return '';
+                    }
+                },
+                {
+                    data: 'descanso_legal',
+                    className: 'text-center',
+                    orderable: false,
+                },    
+                {
+                    data: 'horas_nomina',
+                    className: 'text-center',
+                    orderable: false,
+                }, 
+                {
+                    data: 'descripcion_nomina',
+                    className: 'text-left',
+                    orderable: false,
+                }, 
+            ],
+            order: [
+                [ 0, "asc" ],
+                [ 1, "asc" ],
+                [ 2, "asc" ],
+                [ 6, "asc" ],
+            ]
+        });
+
+    });
+</script>

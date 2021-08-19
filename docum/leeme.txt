@@ -1,0 +1,7 @@
+IMPORTANTE: Este directorio NO se debe acceder directamente desde el código PHP, 
+debe utilizarse la constante Fmo_Config::PATH_UPLOAD_FILES o la constante 
+definida PATH_UPLOAD_FILES. 
+
+Los sistemas cuando se ejecutan en el servidor local "localhost" hacen uso 
+de este directorio pero en los servidores el directorio será definido por los 
+administradores, es decir, este directorio será inválido.

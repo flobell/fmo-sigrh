@@ -1,0 +1,363 @@
+<?php
+
+$subtitulo = NULL;
+$filename = NULL;
+if($this->localidad == NULL) {
+    $subtitulo =  "Desde {$this->f_desde} hasta {$this->f_hasta}";
+    $filename = "[SIGRH - GRAFICO] Asistencia FMO desde {$this->f_desde} hasta {$this->f_hasta}";
+}else {
+    if($this->localidad == 4){
+        $subtitulo =  "Desde {$this->f_desde} hasta {$this->f_hasta} en Ciudad Piar";
+        $filename = "[SIGRH - GRAFICO] Asistencia FMO Ciudad Piar desde {$this->f_desde} hasta {$this->f_hasta}";
+    } else {
+        $subtitulo =  "Desde {$this->f_desde} hasta {$this->f_hasta} en Puerto Ordaz";
+        $filename = "[SIGRH - GRAFICO] Asistencia FMO Puerto Ordaz desde {$this->f_desde} hasta {$this->f_hasta}";
+    }
+}
+
+
+?>
+
+<div class="container-fluid" align="center">
+
+<?php if($this->grafico == true): ?>
+
+    <div id="highChart" style="width: 100%; height:400px;"></div>
+
+    <br>
+
+    <style type="text/css">
+    button:hover {
+        color:#FFF !important;
+    }
+    </style>
+
+    <button class="btn btn-primary" onclick="window.history.back()">
+        <span>
+            <?php echo $this->img('ico_volver.png'); ?>
+            <b> VOLVER</b>
+        </span>
+    </button>
+
+<?php else: ?>
+
+    <h3 align="center">Resumen de Asistencia por Gerencia [ <b><?php echo $this->f_desde ?></b> ~ <b><?php echo $this->f_hasta ?></b> ]</h3>
+
+    <div class="row" style="width: 60%;">  
+        <table id="tDataTable" class="table general table-hover table-striped table-bordered nowrap compact">
+            <thead>
+                <tr> 
+                    <th style="text-align: center;">Descripcion Gerencia</th>
+                    <th style="text-align: center;">Lugar Pago</th>
+                    <!-- <th style="text-align: center;">Fecha</th> -->
+                    <th style="text-align: center;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th style="text-align: center;"></th>
+                    <th></th>
+                    <!-- <th></th> -->
+                    <th style="text-align: center;"></th>
+                </tr>
+            </tfoot>
+        </table>
+
+    </div>
+
+<?php endif; ?>
+
+</div>
+
+<script type="text/javascript">
+
+    jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+      "date-uk-pre": function ( a ) {
+          var ukDatea = a.split('-');
+          return (ukDatea[2] + ukDatea[1] + ukDatea[0]) * 1;
+      },
+
+      "date-uk-asc": function ( a, b ) {
+          return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+      },
+
+      "date-uk-desc": function ( a, b ) {
+          return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+      }
+    });
+    
+    $(document).ready(function() {
+
+        <?php 
+
+            if ($this->grafico == false && count($this->datos) > 0) {
+                $var = 'var arrData = [';
+
+                foreach ($this->datos as $row) {
+                    $var .= "{
+                        descripcion_gerencia: '{$row->descripcion_gerencia}',
+                        lugar_pago: '{$row->lugar_pago}',
+                        total: '{$row->total}',
+                    },";
+                }          
+
+                $var .= '];';
+
+                echo $var;
+            } else {
+                echo 'var arrData = [];';
+            }
+
+        ?>
+                
+
+        $('#tDataTable').DataTable({
+            dom: "<'row' B f r><'row' t><'row' i p>",
+            buttons: {
+                buttons: [
+                    {
+                        className: 'btn btn-primary',
+                        text: '<?php echo $this->img('ico_volver.png'); ?><b> VOLVER</b>',
+                        action: function ( e, dt, node, config ) {
+                            history.back();
+                        }
+                    },
+                    { 
+                        className: 'dt-button',
+                        text: 'GENERAR EXCEL',
+                        extend: 'excelHtml5', 
+                        footer: true , 
+                        title: '<?php echo '(SIGRH) Resumen de Asistencia por Gerencia desde '.$this->f_desde.' hasta '.$this->f_hasta;?>',
+                        messageTop: '<?php echo 'Generado el '.date('d/m/Y').' a las '.date('h:i:s a');?>',
+                        exportOptions: { 
+                            columns: [ 0, 1, 2] 
+                        }
+                    }
+                ],   
+                dom: {
+                    button: {
+                        tag: "button",
+                        className: null
+                    }
+                }
+            },
+            language: {
+                emptyTable: 'La consulta no devolvió registros.'
+            },         
+            pageLength: -1,
+            data: arrData,
+            scrollX: false,
+            scrollY: "50vh",
+            "footerCallback": function ( row, data, start, end, display ) {
+                var api = this.api(), data;
+    
+                // converting to integer to find total
+                var intVal = function ( i ) {
+                    return typeof i === 'string' ? i.replace(/[\$,]/g, '') * 1 : typeof i === 'number' ? i : 0;
+                };
+    
+                // computing column Total of the complete result 
+                var total = api
+                .column( 2 )
+                .data()
+                .reduce( function (a, b) { return intVal(a) + intVal(b); }, 0 );
+
+                // Update footer by showing the total with the reference of the column index 
+                $( api.column(0).footer() ).html('Total');
+                $( api.column(1).footer() ).html('');
+                $( api.column(2).footer() ).html(total);
+            },
+            columns: [   
+                {
+                    data: 'descripcion_gerencia',
+                    className: 'text-left',
+                    orderable: true,
+                }, 
+                {
+                    data: 'lugar_pago',
+                    className: 'text-center',
+                    orderable: true,
+                }, 
+                {
+                    data: 'total',
+                    className: 'text-center',
+                    orderable: true,
+                },  
+            ],
+            order: [
+                [ 0, "asc" ],
+            ]
+        });
+
+    });
+
+    $(document).ready(function() {
+
+        <?php 
+            if ($this->grafico == true && count($this->datos) > 0) {
+                $var = "var arrData = [";
+
+                foreach ($this->datos as $row) {
+                    $var .= "{ 
+                        name: '$row->fecha_dia', 
+                        y: $row->total
+                    },";
+                }          
+
+                $var .= "];";
+
+                echo $var;
+            } else {
+                echo 'var arrData = [];';
+            }
+        ?>
+
+        $('#highChart').highcharts({
+            chart: { type: 'column' },
+            title: { text: 'Gráfico de Asistencia de Trabajadores de Ferrominera' },
+            subtitle: { text: '<?php echo $subtitulo; ?>', x: -20},
+            xAxis: { 
+                title: { text: 'Día' }, 
+                categories: [] 
+            },
+            yAxis: { 
+                title: { text: 'Total Asistidos' },
+                scrollbar: { enabled: true },
+            },
+            exporting: {
+                enabled: true,
+                filename: '<?php echo $filename; ?>',
+                chartOptions: { 
+	                plotOptions: {
+                        series: {
+                            dataLabels: {
+                                enabled: true,
+                            }
+                        }
+	                }
+	            },
+                buttons: {
+                    contextButton: {
+                        text: 'Opciones',
+                        symbolFill: '#004e87',
+                        symbolStroke: '#004e87',
+                        theme: {
+                            fill: '#6ca9ea',
+                            stroke: '#004e87',
+                            states: {
+                                hover: {
+                                    fill: '#5c8ac2',
+                                    stroke: '#004e87'
+                                },
+                                select: {
+                                    fill: '#cfc',
+                                    stroke: '#0f0'
+                                }
+                            }
+                        },
+                        menuItems: [
+                            {
+                                text: 'Imprimir',
+                                onclick: function () {
+                                    this.print();
+                                }
+                            }, 
+                            {
+                                separator: true
+                            }, 
+                            {
+                                text: 'Descargar imágen PNG',
+                                onclick: function () {
+                                    this.exportChart();
+                                }
+                            }, 
+                            {
+                                text: 'Descargar imágen JPEG',
+                                onclick: function () {
+                                    this.exportChart({
+                                        type: 'image/jpeg'
+                                    });
+                                }
+                            }, 
+                            {
+                                text: 'Descargar imágen vectorial SVG',
+                                onclick: function () {
+                                    this.exportChart({
+                                        type: 'image/svg+xml'
+                                    });
+                                }
+                            },
+                            {
+                                separator: true
+                            },
+                            {
+                                text: 'Descargar documento PDF',
+                                onclick: function () {
+                                    this.exportChart({
+                                        type: 'application/pdf'
+                                    });
+                                }
+                            }, 
+                        ]
+                    }
+                }
+            },
+            series: [
+                {
+                    name: 'Asistidos',
+                    data: arrData,
+                }, 
+            ]
+        });
+    });
+
+    // document.addEventListener('DOMContentLoaded', function () {
+    //     var myChart = Highcharts.chart('highChart', {
+    //         chart: { type: 'column' },
+    //         title: { text: 'Resumen de Asistencia de Trabajadores de Ferrominera' },
+    //         subtitle: { text: 'Desde 20/20/20 Hasta 20/20/20', x: -20},
+    //         xAxis: { title: { text: 'Día' }, categories: [] },
+    //         yAxis: { title: { text: 'Total Asistidos' } },
+    //         series: [
+    //             {
+    //                 name: 'Asistidos',
+    //                 data: [
+    //                     { name: '7/1/2020', y: 2177 },
+    //                     { name: '7/2/2020', y: 2203 },
+    //                     { name: '7/3/2020', y: 2230 },
+    //                     { name: '7/4/2020', y: 1350 },
+    //                     { name: '7/5/2020', y: 1223 },
+    //                     { name: '7/6/2020', y: 2129 },
+    //                     { name: '7/7/2020', y: 2383 },
+    //                     { name: '7/8/2020', y: 2088 },
+    //                     { name: '7/9/2020', y: 2057 },
+    //                     { name: '7/10/2020', y: 2100 },
+    //                     { name: '7/11/2020', y: 1351 },
+    //                     { name: '7/12/2020', y: 1255 },
+    //                     { name: '7/13/2020', y: 1939 },
+    //                     { name: '7/14/2020', y: 2124 },
+    //                     { name: '7/15/2020', y: 1867 },
+    //                     { name: '7/16/2020', y: 1775 },
+    //                     { name: '7/17/2020', y: 1758 },
+    //                     { name: '7/18/2020', y: 1184 },
+    //                     { name: '7/19/2020', y: 982 },
+    //                     { name: '7/20/2020', y: 1400 },
+    //                     { name: '7/21/2020', y: 1480 },
+    //                     { name: '7/22/2020', y: 1473 },
+    //                     { name: '7/23/2020', y: 1470 },
+    //                     { name: '7/24/2020', y: 1322 },
+    //                     { name: '7/25/2020', y: 1020 },
+    //                     { name: '7/26/2020', y: 877 },
+    //                     { name: '7/27/2020', y: 1568 },
+    //                     { name: '7/28/2020', y: 1544 },
+    //                     { name: '7/29/2020', y: 1410 },
+    //                     { name: '7/30/2020', y: 1318 },
+    //                 ]
+    //             }, 
+    //         ]
+    //     });
+
+    // });
+</script>

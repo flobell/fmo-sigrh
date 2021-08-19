@@ -1,0 +1,282 @@
+
+
+ <style>
+.link { color: black;
+        text-decoration: underline;
+
+} /* CSS link color */
+                
+ </style>
+<div class="container-fluid" align="center" style="height: 100%; width: 100%;">
+
+
+    <h2 align="center"><u>Porcentaje General de Asistencia</u></h2>
+    <h3 align="center">Desde <b><?php echo $this->fecha_desde ?></b> hasta <b><?php echo $this->fecha_hasta ?></b></h3>
+    <table id="tblAsistencia"  class="table general table-striped table-bordered table-condensed" style="width: 99%;">
+        
+        <thead>
+            <tr>
+                <th style="text-align: center; width: 30%;">Descripcion de Gerencia</th>
+                <th style="text-align: center; ">Dias Laborales</th>
+                <th style="text-align: center; width: 15%;">Lugar de Pago</th>
+                <th style="text-align: center; ">N° Trab. con <br>0 a 25%</th>
+                <th style="text-align: center; ">N° Trab. con <br>26 a 50%</th>
+                <th style="text-align: center; ">N° Trab. con <br>51 a 75%</th>
+                <th style="text-align: center; ">N° Trab. con <br>76 a 100%</th>
+                <th style="text-align: center;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+        <tfoot>
+             <tr>
+                    
+                    
+                    <th style="text-align: center;">TOTALES</th>
+                    <th></th>
+                    <th></th>
+                     <th>  
+                          <a
+                            id ='total'
+                            class = "link"
+                            href="<?php echo $this->baseUrl('default/fichaje/vwasistencia') ?>/criterio/25/desde/<?php echo $this->fecha_desde; ?>/hasta/<?php echo $this->fecha_hasta; ?>">
+                          col3  
+                        </a>
+                      </th>
+                    <th>  
+                          <a
+                            
+                            class = "link"
+                            href="<?php echo $this->baseUrl('default/fichaje/vwasistencia') ?>/criterio/50/desde/<?php echo $this->fecha_desde; ?>/hasta/<?php echo $this->fecha_hasta; ?>">
+                          col4 
+                        </a>
+                      </th>
+                    <th>  
+                          <a
+                           
+                            class = "link"
+                            href="<?php echo $this->baseUrl('default/fichaje/vwasistencia') ?>/criterio/75/desde/<?php echo $this->fecha_desde; ?>/hasta/<?php echo $this->fecha_hasta; ?>">
+                            col5
+                        </a>
+                      </th>
+                    
+                      <th>  
+                          <a
+                            
+                            class = "link"
+                            href="<?php echo $this->baseUrl('default/fichaje/vwasistencia') ?>/criterio/100/desde/<?php echo $this->fecha_desde; ?>/hasta/<?php echo $this->fecha_hasta; ?>">
+                          col6  
+                        </a>
+                      </th>
+                      
+                      <th>
+                         <a
+                             class = "link"
+                             href="<?php echo $this->baseUrl('default/fichaje/vwasistencia') ?>/desde/<?php echo $this->fecha_desde; ?>/hasta/<?php echo $this->fecha_hasta; ?>">
+                           col7 
+                         </a>   
+                      </th>
+            
+                    </tr>
+        </tfoot>
+    </table>
+    
+
+    
+</div>
+
+<script type="text/javascript">
+    
+    jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+      "date-uk-pre": function ( a ) {
+          var ukDatea = a.split('/');
+          return (ukDatea[2] + ukDatea[1] + ukDatea[0]) * 1;
+      },
+
+      "date-uk-asc": function ( a, b ) {
+          return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+      },
+
+      "date-uk-desc": function ( a, b ) {
+          return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+      }
+    });
+    
+    $(document).ready(function() {
+        <?php 
+            if (count($this->datosAsistencia) > 0) {                
+                
+                $var = 'var arrData = [';
+                
+                foreach ($this->datosAsistencia as $row) {                            
+                            
+                            
+
+                    $var .= "{
+                        codigo:'{$row->codigo}',
+                        descripcion_gerencia:'{$row->descripcion_gerencia}',
+                        dias_habiles:'{$row->dias_habiles}',
+                        lugar_pago:'{$row->lugar_pago}',                                
+                        cant_1_25:'{$row->cant_1_25}',
+                        cant_26_50:'{$row->cant_26_50}',
+                        cant_51_75:'{$row->cant_51_75}',
+                        cant_76_mas:'{$row->cant_76_mas}',
+                        total:'{$row->total}',
+                            
+                    },";
+
+                   
+                }
+
+                
+                $var .= '];';
+                echo $var;                
+                
+            } else {                
+                echo 'var arrData = [];';                                
+            }
+        ?>
+        
+
+        $('#tblAsistencia').DataTable({
+            dom: "<'row' B l f r><'row' t><'row' i p>",
+            buttons: {
+                buttons: [
+                    {
+                        className: 'btn btn-primary',
+                        text: '<?php echo $this->img('ico_volver.png'); ?><b> VOLVER</b>',
+                        action: function ( e, dt, node, config ) {
+                            history.back();
+                        }
+                    },
+                    { 
+                        className: 'dt-button',
+                        text: 'GENERAR EXCEL',
+                        extend: 'excelHtml5', 
+                        footer: true , 
+                        title: '<?php echo '(SIGRH) Porcentaje General de Asistencia desde '.$this->fecha_desde.' hasta '.$this->fecha_hasta;?>',
+                        exportOptions: {
+                            columns: [ 0, 1, 2, 3, 4, 5 ,6 ,7]
+                        }
+                    }
+                ],
+                dom: {
+                    button: {
+                        tag: "button",
+                        className: null
+                    }
+                }
+            },
+            
+            language: { emptyTable: 'La consulta no devolvió registros.' },
+           
+            paging: false,
+            responsive: true,
+             footerCallback: function () {
+                 var api = this.api();
+                 var intVal = function ( i ) {
+                        return typeof i === 'string' ?
+                           i.replace(/[\$,]/g, '')*1 :
+                           typeof i === 'number' ? i : 0;
+                 };
+                 columns = [0,1,2,3,4,5,6,7];
+
+                 for (var i = 0; i < columns.length; i++) {               
+                     total = api
+                     .column( i )
+                     .data()
+                     .reduce( function (a, b) {
+                         return intVal(a) + intVal(b);
+                     }, 0 );
+                        //console.log('valores :',total);
+                     if (total < 0 && total_pagina<0){
+                         $('tfoot  th  a').eq(i).html('<span style="color:white; font-weight: bold; font-size: 15px !important;">'+ (total).toFixed(0) +'</span>');
+                     }
+                     else {
+                         $('tfoot  th a').eq(i-3).html('<span style="color:white; font-weight: bold; font-size: 15px !important;">'+ (total).toFixed(0) +'</span>');
+                   }
+                 }
+             },
+            
+            data: arrData,
+            columns: [
+                {
+                    data: 'descripcion_gerencia',
+                    className: 'text-left',
+                    // orderable: false
+                },
+                {
+                    data: 'dias_habiles',
+                    className: 'text-center',
+                    // orderable: false
+                }, 
+                {
+                    data: 'lugar_pago',
+                    className: 'text-center',
+                    // orderable: false
+                },
+                {   
+                    data: 'cant_1_25',
+                    className: 'text-center',
+                    // orderable: false,
+                    render: function (data, type, row, meta) {
+                        let lugar = 0;
+                        if(row.lugar_pago == 'PUERTO ORDAZ') { lugar = 1;}
+                        else { lugar = 2; }
+                        return  '<a class = "link" href="<?php echo $this->baseUrl('default/fichaje/vwasistencia/gerencia/') ?>'+row.codigo+'/criterio/25'+'/lugar/'+lugar+'/desde/<?php echo $this->fecha_desde; ?>/hasta/<?php echo $this->fecha_hasta; ?>" title="Ver Asistencia">'+data+'</a>';
+                    }
+                    
+                },
+                {
+                    data: 'cant_26_50',
+                    className: 'text-center',
+                    // orderable: false,
+                    render: function (data, type, row, meta) {
+                        let lugar = 0;
+                        if(row.lugar_pago == 'PUERTO ORDAZ') { lugar = 1;}
+                        else { lugar = 2; }
+                       return  '<a class = "link" href="<?php echo $this->baseUrl('default/fichaje/vwasistencia/gerencia/') ?>'+row.codigo+'/criterio/50'+'/lugar/'+lugar+'/desde/<?php echo $this->fecha_desde; ?>/hasta/<?php echo $this->fecha_hasta; ?>" title="Ver Asistencia">'+data+'</a>';
+                    
+                    }
+                    
+                },
+                {
+                    data: 'cant_51_75',
+                    className: 'text-center',
+                    //orderable: false,
+                    render: function (data, type, row, meta) {
+                        let lugar = 0;
+                        if(row.lugar_pago == 'PUERTO ORDAZ') { lugar = 1;}
+                        else { lugar = 2; }
+                       return  '<a class = "link" href="<?php echo $this->baseUrl('default/fichaje/vwasistencia/gerencia/') ?>'+row.codigo+'/criterio/75'+'/lugar/'+lugar+'/desde/<?php echo $this->fecha_desde; ?>/hasta/<?php echo $this->fecha_hasta; ?>" title="Ver Asistencia">'+data+'</a>';
+                   }
+                },
+                {
+                    data: 'cant_76_mas',
+                    className: 'text-center',
+                    //orderable: false,
+                    render: function (data, type, row, meta) {
+                        let lugar = 0;
+                        if(row.lugar_pago == 'PUERTO ORDAZ') { lugar = 1;}
+                        else { lugar = 2; }
+                       return  '<a class = "link" href="<?php echo $this->baseUrl('default/fichaje/vwasistencia/gerencia/') ?>'+row.codigo+'/criterio/100'+'/lugar/'+lugar+'/desde/<?php echo $this->fecha_desde; ?>/hasta/<?php echo $this->fecha_hasta; ?>" title="Ver Asistencia">'+data+'</a>';
+                     
+                    }
+                     
+                },
+                {
+                 data: 'total',
+                 className: 'text-center',
+                 // orderable: false
+                }, 
+                   
+            ],
+            order: [             
+                [ 0, "asc" ]
+            ]
+        });
+
+    });
+
+
+</script>

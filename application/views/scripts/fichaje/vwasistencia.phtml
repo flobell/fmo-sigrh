@@ -1,0 +1,288 @@
+<?php 
+
+    $sysInfo  = new Fmo_SystemInfo();
+
+?>
+
+<div class="container-fluid" align="center">
+    
+    <div class="row" style="width: 99%;">
+        <h2 align="center"><u>Porcentaje (%) de Asistencia de los Trabajadores</u></h2>
+        <?php if($this->descripcion_gerencia != NULL){ echo '<h3 align="center">'.$this->descripcion_gerencia.'</h3>'; }?>
+        <h4 align="center">
+            <?php 
+                if($this->lugar != NULL){
+                    if($this->lugar == '1'){
+                        echo '<b>PUERTO ORDAZ | </b>';
+                    }
+                    else {
+                        echo '<b>CIUDAD PIAR | </b>';
+                    }
+                }
+            ?>
+            Desde <b><?php echo $this->fecha_desde ?></b> hasta <b><?php echo $this->fecha_hasta ?></b>
+            <?php 
+                if($this->criterio != NULL){
+                    if($this->criterio == '25'){ echo ' | Rango entre <b>0%</b> - <b>25%</b>';}
+                    if($this->criterio == '50'){ echo ' | Rango entre <b>26%</b> - <b>50%</b>';}
+                    if($this->criterio == '75'){ echo ' | Rango entre <b>51%</b> - <b>75%</b>';}
+                    if($this->criterio == '100'){ echo ' | Rango entre <b>76%</b> - <b>100%</b>';}
+                }
+            ?>
+        </h4>
+
+        <table id="tblAsistencia" class="table general table-striped table-bordered table-condensed table-hover">
+            <thead>
+                <tr>
+                    <th style="text-align: center; width: 20%;">Gerencia</th>
+                    <th style="text-align: center; width: 20%;">Departamento</th>
+                    <th style="text-align: center; ">Ficha</th>
+                    <th style="text-align: center; ">Cédula</th>
+                    <th style="text-align: center; ">Nombre y Apellido</th>
+                    <th style="text-align: center; ">Tipo de Nómina</th>
+                    <th style="text-align: center; ">Dias<br>Habiles</th>
+                    <th style="text-align: center; ">Dias<br>Asistidos</th>
+                    <th style="text-align: center; ">Horas<br>Promedio de Asistencia</th>
+                    <th style="text-align: center; ">Dias<br>Vacación</th>
+                    <th style="text-align: center; ">Dias<br>Fichaje<br>Vacación</th>
+                    <th style="text-align: center; ">Horas<br>Promedio de Asistencia en Vacación</th>
+                    <th style="text-align: center; ">%<br>Asistencia</th>
+                    <th style="text-align: center; ">Opciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+            <tfoot>
+            </tfoot>
+        </table>
+    </div>
+
+    
+</div>
+
+<script type="text/javascript">
+    
+    jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+      "date-uk-pre": function ( a ) {
+          var ukDatea = a.split('/');
+          return (ukDatea[2] + ukDatea[1] + ukDatea[0]) * 1;
+      },
+
+      "date-uk-asc": function ( a, b ) {
+          return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+      },
+
+      "date-uk-desc": function ( a, b ) {
+          return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+      }
+    });
+    
+    $(document).ready(function() {
+        <?php 
+
+            if (count($this->datosAsistencia) > 0) {                                                                                             
+
+                $var = 'var arrData = [';
+                if($this->criterio == NULL){
+                    foreach ($this->datosAsistencia as $row) {     
+                    
+                        $var .= "{
+                            gerencia: '{$row->gerencia}',
+                            descripcion_gerencia: '{$row->descripcion_gerencia}',
+                            descripcion_departamento: '{$row->descripcion_departamento}',
+                            ficha: '{$row->ficha}',
+                            cedula: '{$row->cedula}',
+                            nombre: '{$row->nombre}',
+                            nomina: '{$row->nomina}',
+                            actividad: '{$row->actividad}',
+                            fecha_ingreso: '{$row->fecha_ingreso}',
+                            dias_habiles: '{$row->dias_habiles}',
+                            dias_asistencia: '{$row->dias_asistencia}',
+                            dias_vacacion: '{$row->dias_vacacion}',
+                            dias_vacacion_fichaje: '{$row->dias_vacacion_fichaje}',
+                            porcentaje_asistencia: '{$row->porcentaje_asistencia}',
+                            horas_promedio_asistencia: '{$row->horas_promedio_asistencia}',
+                            horas_promedio_fichaje_vacacion: '{$row->horas_promedio_fichaje_vacacion}',
+                        },";
+    
+                    }
+
+                } else {
+                    foreach ($this->datosAsistencia as $row) {     
+                        $flag = FALSE;
+                        if($this->criterio == '25' && floatval($row->porcentaje_asistencia)>=0 && floatval($row->porcentaje_asistencia)<=25){
+                            $flag = TRUE;
+                        }
+                        if($this->criterio == '50' && floatval($row->porcentaje_asistencia)>=26 && floatval($row->porcentaje_asistencia)<=50){
+                            $flag = TRUE;
+                        }
+                        if($this->criterio == '75' && floatval($row->porcentaje_asistencia)>=51 && floatval($row->porcentaje_asistencia)<=75){
+                            $flag = TRUE;
+                        }
+                        if($this->criterio == '100' && floatval($row->porcentaje_asistencia)>=76){
+                            $flag = TRUE;
+                        }
+
+                        if($flag){
+                            $var .= "{
+                                gerencia: '{$row->gerencia}',
+                                descripcion_gerencia: '{$row->descripcion_gerencia}',
+                                descripcion_departamento: '{$row->descripcion_departamento}',
+                                ficha: '{$row->ficha}',
+                                cedula: '{$row->cedula}',
+                                nombre: '{$row->nombre}',
+                                nomina: '{$row->nomina}',
+                                actividad: '{$row->actividad}',
+                                fecha_ingreso: '{$row->fecha_ingreso}',
+                                dias_habiles: '{$row->dias_habiles}',
+                                dias_asistencia: '{$row->dias_asistencia}',
+                                dias_vacacion: '{$row->dias_vacacion}',
+                                dias_vacacion_fichaje: '{$row->dias_vacacion}',
+                                porcentaje_asistencia: '{$row->porcentaje_asistencia}',
+                                horas_promedio_asistencia: '{$row->horas_promedio_asistencia}',
+                                horas_promedio_fichaje_vacacion: '{$row->horas_promedio_fichaje_vacacion}',
+                            },";
+                        }
+
+    
+                    }
+
+                }
+
+                $var .= '];';
+                echo $var; 
+                
+            } else {                
+                echo 'var arrData = [];';                                
+            }
+        ?>
+        
+
+        $('#tblAsistencia').DataTable({
+            dom: "<'row' B l f r><'row' t><'row' i p>",
+            buttons: {
+                buttons: [
+                    {
+                        className: 'btn btn-primary',
+                        text: '<?php echo $this->img('ico_volver.png'); ?><b> VOLVER</b>',
+                        action: function ( e, dt, node, config ) {
+                            history.back();
+                        }
+                    },
+                    { 
+                        className: 'dt-button',
+                        text: 'GENERAR EXCEL',
+                        extend: 'excelHtml5', 
+                        footer: true , 
+                        title: '<?php echo '(SIGRH) Porcentaje de Asistencia desde '.$this->fecha_desde.' hasta '.$this->fecha_hasta;?>',
+                        exportOptions: {
+                            columns: [ 0, 1, 2, 3, 4, 5 ,6 ,7 ,8, 9, 10, 11, 12]
+                        }
+                    }
+                ],
+                dom: {
+                    button: {
+                        tag: "button",
+                        className: null
+                    }
+                }
+            },
+            language: { emptyTable: 'La consulta no devolvió registros.' },
+            paging:   true,
+            pageLength: 10,
+            data: arrData,
+            columns: [
+                {
+                    data: 'descripcion_gerencia',
+                    className: 'text-left',
+                    // orderable: false
+                },
+                {
+                    data: 'descripcion_departamento',
+                    className: 'text-left',
+                    // orderable: false
+                },
+                {   
+                    data: 'ficha',
+                    className: 'text-center',
+                    // orderable: false
+                },
+                {
+                    data: 'cedula',
+                    className: 'text-center',
+                    // orderable: false
+                },
+                {
+                    data: 'nombre',
+                    className: 'text-left',
+                    // orderable: false,
+                },
+                {
+                    data: 'nomina',
+                    className: 'text-center',
+                    // orderable: false
+                },
+                {
+                    data: 'dias_habiles',
+                    className: 'text-center',
+                    // orderable: false
+                },
+                {
+                    data: 'dias_asistencia',
+                    className: 'text-center',
+                    // orderable: false
+                },
+                {
+                    data: 'horas_promedio_asistencia',
+                    className: 'text-center',
+                    // orderable: false
+                },
+                {
+                    data: 'dias_vacacion',
+                    className: 'text-center',
+                    // orderable: false
+                    render: function (data, type, row, meta) {           
+                        return  '<a href="<?php echo $this->baseUrl('default/fichaje/vwdetallevacaciones/cedula/') ?>'+row.cedula+'/desde/<?php echo $this->fecha_desde; ?>/hasta/<?php echo $this->fecha_hasta; ?>" title="Ver Vacaciones">'+data+'</a>';
+                    }
+                },
+                {
+                    data: 'dias_vacacion_fichaje',
+                    className: 'text-center',
+                    // orderable: false
+                    // render: function (data, type, row, meta) {           
+                    //     return  '<a href="<?php echo $this->baseUrl('default/fichaje/vwdetallevacaciones/cedula/') ?>'+row.cedula+'/desde/<?php echo $this->fecha_desde; ?>/hasta/<?php echo $this->fecha_hasta; ?>" title="Ver Vacaciones">'+data+'</a>';
+                    // }
+                },
+                {
+                    data: 'horas_promedio_fichaje_vacacion',
+                    className: 'text-center',
+                    // orderable: false
+                },
+                {
+                    data: 'porcentaje_asistencia',
+                    className: 'text-center',
+                    // orderable: false,
+                    render: function (data, type, row, meta) {
+                        return data>100?'100.00'+'%':data+'%';
+                    }
+                },
+                {
+                    className: 'text-center',
+                    orderable: false,
+                    render: function (data, type, row, meta) {           
+                        return  '<a href="<?php echo $this->baseUrl('default/fichaje/vwdetalleasistencia/') ?>cedula/'+row.cedula+'/desde/<?php echo $this->fecha_desde; ?>/hasta/<?php echo $this->fecha_hasta; ?>" title="Ver detalle"><?php echo $this->img('ico_detalle.png'); ?></a>'+
+                        '<a href="<?php echo $this->baseUrl('default/fichaje/vwhojadetiempo/') ?>ficha/'+row.ficha+'/desde/<?php echo $this->fecha_desde; ?>/hasta/<?php echo $this->fecha_hasta; ?>" title="Ver Hoja de Tempo"><?php echo $this->img('ico_reloj.png'); ?></a>';
+                    }
+                }
+            ],
+            order: [
+                [ 0, "asc" ],
+                [ 1, "asc" ],
+                [ 2, "asc" ]
+            ]
+        });
+
+    });
+
+
+</script>

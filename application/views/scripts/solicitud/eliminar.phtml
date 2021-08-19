@@ -1,0 +1,24 @@
+<table class="general">
+    <caption>ELIMINAR REGISTRO</caption>
+    <tr>
+        <th width="20%" align="right">Dirección IP</th>
+        <td><?php echo $this->escape(strtok($this->servidor->id, '/')); ?></td>
+    </tr>
+    <tr>
+        <th align="right">Nombre del Equipo</th>
+        <td><?php echo $this->escape($this->servidor->nombre); ?></td>
+    </tr>
+    <tr>
+        <th align="right">Ambiente</th>
+        <td><?php echo $this->escape($this->servidor->findParentRow('Application_Model_DbTable_Ambiente', 'Ambiente')->nombre); ?></td>
+    </tr>
+    <tr>
+        <th align="right">Descripción</th>
+        <td><?php echo $this->escape($this->servidor->descripcion); ?></td>
+    </tr>
+</table>
+<p align="center">
+    <a class="button" href="<?php echo $this->baseUrl($this->urlDefault); ?>"><?php echo $this->img('ico_volver.png'); ?> Volver</a>
+    <a class="button" href="<?php echo $this->url(array(ServidorController::P_CONFIRMAR => '1')); ?>"><?php echo $this->img('ico_eliminar.png'); ?> Eliminar</a>
+</p>
+<br/>

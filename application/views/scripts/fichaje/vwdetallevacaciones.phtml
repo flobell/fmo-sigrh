@@ -1,0 +1,119 @@
+<div class="container-fluid" align="center">
+
+    <h3 align="center"><u>Detalle del trabajador desde <b><?php echo $this->fecha_desde ?></b> hasta <b><?php echo $this->fecha_hasta ?></b></u></h3>
+    <?php echo $this->partial('infotrabajador.phtml', array('trabajador' => $this->datosTrabajador)); ?>
+    
+    <br>
+    
+    <div class="row" style="width: 25%;">  
+        <table id="tblAsistencia" class="table general table-striped table-bordered table-condensed table-hover">
+            <thead>
+                <tr>
+                    <th style="text-align: center;">Fecha de Disfrute</th>
+                    <th style="text-align: center;">Fecha Final</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+
+</div>
+
+
+<script type="text/javascript">
+    
+    jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+      "date-uk-pre": function ( a ) {
+          var ukDatea = a.split('-');
+          return (ukDatea[2] + ukDatea[1] + ukDatea[0]) * 1;
+      },
+
+      "date-uk-asc": function ( a, b ) {
+          return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+      },
+
+      "date-uk-desc": function ( a, b ) {
+          return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+      }
+    });
+    
+    $(document).ready(function() {
+        <?php 
+            if (count($this->datosVacaciones) > 0) {
+                $var = 'var arrData = [';
+
+                foreach ($this->datosVacaciones as $row) {
+                    $var .= "{
+                        cedula: '{$row->cedula}', 
+                        fecha_disfrute: '{$row->fecha_disfrute}',
+                        fecha_final: '{$row->fecha_final}'                   
+                    },";
+                }          
+
+                $var .= '];';
+
+                echo $var;
+            } else {
+                echo 'var arrData = [];';
+            }
+        ?>
+                
+
+        $('#tblAsistencia').DataTable({
+            dom: "<'row' B><'row' t>",
+            buttons: {
+                buttons: [
+                    {
+                        className: 'btn btn-primary',
+                        text: '<?php echo $this->img('ico_volver.png'); ?><b> VOLVER</b>',
+                        action: function ( e, dt, node, config ) {
+                            history.back();
+                        }
+                    },
+                    // { 
+                    //     className: 'dt-button',
+                    //     text: 'GENERAR EXCEL',
+                    //     extend: 'excelHtml5', 
+                    //     footer: true , 
+                    //     title: '<?php echo '(SIGRH) Detalle de Vacaciones de '.$this->datosTrabajador->nombre.' desde '.$this->fecha_desde.' hasta '.$this->fecha_hasta;?>',
+                    //     exportOptions: { 
+                    //         columns: [ 0, 1] 
+                    //     }
+                    // }
+                ],   
+                dom: {
+                    button: {
+                        tag: "button",
+                        className: null
+                    }
+                }
+            },
+            language: {
+                emptyTable: 'La consulta no devolvió registros.'
+            },         
+            paging:   true,
+            pageLength: 10,
+            data: arrData,
+            columns: [               
+                {
+                    data: 'fecha_disfrute',
+                    className: 'text-center',
+                    type: 'date-uk',
+                },   
+                {
+                    data: 'fecha_final',
+                    className: 'text-center',
+                    type: 'date-uk',
+                    orderable: false,
+                }                
+            ],
+            order: [
+                [ 0, "asc" ]
+            ]
+        });
+
+    });
+</script>
+
